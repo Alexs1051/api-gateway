@@ -10,34 +10,39 @@ spring:
         locator:
           enabled: false
       routes:
-        - id: user-service
-          uri: lb://USER-SERVICE
+        - id: user-service-cb
+          uri: lb://circuit-breaker
           predicates:
-            - Path=/api/users/**
+            - Path=/user-service/**
           filters:
-            - RewritePath=/api/users/(?<segment>.*), /api/$\{segment}
+            - RewritePath=/user-service/(?<segment>.*), /circuit-breaker/user-service/$\{segment}
 
-        - id: notification-service
-          uri: lb://NOTIFICATION-SERVICE
+        - id: notification-service-cb
+          uri: lb://circuit-breaker
           predicates:
-            - Path=/api/notifications/**
+            - Path=/notification-service/**
           filters:
-            - RewritePath=/api/notifications/(?<segment>.*), /api/$\{segment}
+            - RewritePath=/notification-service/(?<segment>.*), /circuit-breaker/notification-service/$\{segment}
+
+        - id: circuit-breaker-direct
+          uri: lb://circuit-breaker
+          predicates:
+            - Path=/cb/**
+          filters:
+            - StripPrefix=1
 
 eureka:
   client:
     service-url:
       defaultZone: http://eureka-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
   instance:
-    prefer-ip-address: true
+    prefer-ip-address: false
+    hostname: api-gateway
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway,routes
-
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.cloud.loadbalancer: DEBUG
+        include: health,info,metrics,gateway
