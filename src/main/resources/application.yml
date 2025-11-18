@@ -24,13 +24,6 @@ spring:
           filters:
             - RewritePath=/notification-service/(?<segment>.*), /circuit-breaker/notification-service/$\{segment}
 
-        - id: circuit-breaker-direct
-          uri: lb://circuit-breaker
-          predicates:
-            - Path=/cb/**
-          filters:
-            - StripPrefix=1
-
 eureka:
   client:
     service-url:
